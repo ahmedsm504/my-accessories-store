@@ -34,12 +34,20 @@
             min-height: 100vh;
         }
 
-        .container {
-            display: none;
+        /* Public Store (Customer View) */
+        .public-container {
+            display: block;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
         }
 
-        .container.active {
-            display: block;
+        /* Admin Container (Hidden by default) */
+        .admin-container {
+            display: none;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
         }
 
         /* Header Styles */
@@ -449,10 +457,6 @@
             display: none;
         }
 
-        .admin-page.active {
-            display: block;
-        }
-
         /* Orders Page */
         .orders-grid {
             display: grid;
@@ -770,7 +774,7 @@
 </head>
 <body>
     <!-- Public Store (Customer View) -->
-    <div class="container active" id="publicContainer">
+    <div class="public-container" id="publicContainer">
         <header class="header">
             <a href="#" class="logo">
                 <div class="logo-icon">
@@ -837,7 +841,7 @@
     </div>
     
     <!-- Admin Dashboard -->
-    <div class="container" id="adminContainer">
+    <div class="admin-container" id="adminContainer">
         <header class="header">
             <div class="logo">
                 <div class="logo-icon">
@@ -1212,20 +1216,9 @@
     </div>
 
     <script>
-        // ==================== المتغيرات العالمية ====================
-        let supabase = null;
-        let SUPABASE_URL = localStorage.getItem('supabaseUrl') || '';
-        let SUPABASE_KEY = localStorage.getItem('supabaseKey') || '';
-        const ADMIN_PASSWORD = 'admin123';
-        let isAdminLoggedIn = false;
-        let currentFilter = 'all';
-        let products = [];
-        let categories = [];
-        let orders = [];
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
         // ==================== دوال النوافذ المنبثقة ====================
         function openAdminLoginModal() {
+            console.log("Opening admin login modal");
             document.getElementById('adminLoginModal').classList.add('active');
         }
 
@@ -1234,6 +1227,7 @@
         }
 
         function openCartModal() {
+            console.log("Opening cart modal");
             updateCartDisplay();
             document.getElementById('cartModal').classList.add('active');
         }
@@ -1250,6 +1244,18 @@
             document.getElementById('orderSuccessModal').classList.remove('active');
             showStore();
         }
+
+        // ==================== المتغيرات العالمية ====================
+        let supabase = null;
+        let SUPABASE_URL = localStorage.getItem('supabaseUrl') || '';
+        let SUPABASE_KEY = localStorage.getItem('supabaseKey') || '';
+        const ADMIN_PASSWORD = 'admin123';
+        let isAdminLoggedIn = false;
+        let currentFilter = 'all';
+        let products = [];
+        let categories = [];
+        let orders = [];
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
         // ==================== إدارة السلة ====================
         function updateCartCount() {
@@ -1376,14 +1382,14 @@
 
         // ==================== إدارة المتجر ====================
         function showStore() {
-            document.getElementById('publicContainer').classList.add('active');
-            document.getElementById('adminContainer').classList.remove('active');
+            document.getElementById('publicContainer').style.display = 'block';
+            document.getElementById('adminContainer').style.display = 'none';
             displayProducts();
         }
 
         function showAdminDashboard() {
-            document.getElementById('publicContainer').classList.remove('active');
-            document.getElementById('adminContainer').classList.add('active');
+            document.getElementById('publicContainer').style.display = 'none';
+            document.getElementById('adminContainer').style.display = 'block';
             if (isAdminLoggedIn) {
                 adminSearchProducts();
                 displayOrders();
@@ -2295,6 +2301,7 @@
 
         // ==================== تهيئة التطبيق ====================
         window.onload = async function() {
+            console.log("Page loaded");
             updateCartCount();
             hideToast();
             loadSupabaseSettings();
