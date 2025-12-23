@@ -3,207 +3,249 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>محل الإكسسوارات - متجر إلكتروني</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>اونلاين | متجرك الإلكتروني الأول</title>
+    <meta name="description" content="اونلاين - أفضل متجر إلكتروني لإكسسوارات الجوالات والكمبيوتر - شواحن أصلية، كابلات قوية، سماعات عالية الجودة"
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;500;700;800&family=Almarai:wght@400;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Styles -->
     <link rel="stylesheet" href="styles.css">
+    
+    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <!-- Public Store (Customer View) -->
+    <!-- ========== المتجر العام ========== -->
     <div class="public-container" id="publicContainer">
-        <header class="header">
-            <a href="#" class="logo">
-                <div class="logo-icon">
-                    <i class="fas fa-gem"></i>
-                </div>
-                <div class="logo-text">محل الإكسسوارات</div>
-            </a>
-            
-            <div class="header-actions">
-                <button class="cart-btn" onclick="openCartModal()">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span class="cart-count" id="cartCount">0</span>
-                </button>
+        <header class="header" id="mainHeader">
+            <div class="header-content">
+                <a href="#" class="logo" onclick="showStore(); return false;">
+                    <div class="logo-icon">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                    <div class="logo-text">
+                        <span class="logo-title">اونلاين</span>
+                        <span class="logo-subtitle">تسوق بذكاء • وفّر بسهولة</span>
+                    </div>
+                </a>
                 
-                <button class="admin-btn" onclick="openAdminLoginModal()">
-                    <i class="fas fa-user-shield"></i>
-                    دخول المدير
-                </button>
+                <div class="header-actions">
+                    <button class="cart-btn" onclick="openCartModal()" title="سلة التسوق">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </button>
+                    
+                    <button class="admin-btn" onclick="openAdminLoginModal()">
+                        <i class="fas fa-user-shield"></i>
+                        <span>لوحة التحكم</span>
+                    </button>
+                </div>
             </div>
         </header>
         
         <main class="store-content">
             <section class="hero-section">
-                <h1 class="hero-title">🎁 أفضل الإكسسوارات للجوالات والكمبيوتر</h1>
-                <p class="hero-subtitle">اكتشف تشكيلتنا الواسعة من الشواحن، الكابلات، السماعات، الأغطية وأكثر</p>
-                
-                <div class="hero-features">
-                    <div class="feature">
-                        <div class="feature-icon">
-                            <i class="fas fa-shipping-fast"></i>
+                <div class="hero-bg"></div>
+                <div class="hero-content">
+                    <h1 class="hero-title">
+                        <span class="hero-emoji">🛍️</span>
+                        اونلاين - تسوق بذكاء من منزلك
+                    </h1>
+                    <p class="hero-subtitle">أفضل الأسعار • جودة مضمونة • توصيل سريع • تجربة تسوق ممتعة</p>
+                    
+                    <div class="hero-features">
+                        <div class="feature">
+                            <div class="feature-icon"><i class="fas fa-rocket"></i></div>
+                            <span>توصيل فوري</span>
                         </div>
-                        <span class="feature-text">توصيل سريع</span>
-                    </div>
-                    <div class="feature">
-                        <div class="feature-icon">
-                            <i class="fas fa-shield-alt"></i>
+                        <div class="feature">
+                            <div class="feature-icon"><i class="fas fa-certificate"></i></div>
+                            <span>ضمان أصلي</span>
                         </div>
-                        <span class="feature-text">ضمان الجودة</span>
-                    </div>
-                    <div class="feature">
-                        <div class="feature-icon">
-                            <i class="fas fa-headset"></i>
+                        <div class="feature">
+                            <div class="feature-icon"><i class="fas fa-headphones-alt"></i></div>
+                            <span>دعم 24/7</span>
                         </div>
-                        <span class="feature-text">دعم فني</span>
+                        <div class="feature">
+                            <div class="feature-icon"><i class="fas fa-check-circle"></i></div>
+                            <span>منتجات معتمدة</span>
+                        </div>
                     </div>
                 </div>
             </section>
             
             <section class="store-filters">
                 <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="🔍 ابحث عن منتج (شاحن، كابل، سماعة، إلخ)...">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchInput" placeholder="ابحث عن شاحن، كابل، سماعة...">
                     <button class="search-btn" onclick="searchProducts()">
-                        <i class="fas fa-search"></i> بحث
+                        <span>بحث</span>
+                        <i class="fas fa-arrow-left"></i>
                     </button>
                 </div>
                 
-                <div class="category-filters" id="categoryFilters">
-                </div>
+                <div class="category-filters" id="categoryFilters"></div>
             </section>
             
-            <div class="products-grid" id="productsContainer">
-            </div>
+            <div class="products-grid" id="productsContainer"></div>
         </main>
+        
+        <footer class="footer">
+            <p>© 2024 اونلاين - متجرك الإلكتروني الأول | جميع الحقوق محفوظة</p>
+        </footer>
     </div>
     
-    <!-- Admin Dashboard -->
+    <!-- ========== لوحة تحكم المدير ========== -->
     <div class="admin-container" id="adminContainer">
-        <header class="header">
-            <div class="logo">
-                <div class="logo-icon">
-                    <i class="fas fa-user-shield"></i>
-                </div>
-                <div class="logo-text">لوحة تحكم المدير</div>
-            </div>
-            
-            <div class="header-actions">
-                <div style="background: none; padding: 0; color: var(--primary);">
-                    <div class="contact-numbers">
-                        <div class="contact-number" style="color: var(--primary);">
-                            <i class="fas fa-phone"></i>
-                            <span id="adminPhoneNumber">01XXXXXXXXX</span>
-                        </div>
+        <header class="header admin-header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon admin-icon">
+                        <i class="fas fa-shield-halved"></i>
+                    </div>
+                    <div class="logo-text">
+                        <span class="logo-title">لوحة التحكم</span>
+                        <span class="logo-subtitle">إدارة شاملة</span>
                     </div>
                 </div>
                 
-                <button class="admin-btn" onclick="logoutAdmin()">
-                    <i class="fas fa-sign-out-alt"></i>
-                    خروج
-                </button>
+                <div class="header-actions">
+                    <div class="admin-info">
+                        <i class="fas fa-phone-alt"></i>
+                        <span id="adminPhoneNumber">01XXXXXXXXX</span>
+                    </div>
+                    <button class="admin-btn logout-btn" onclick="logoutAdmin()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>خروج</span>
+                    </button>
+                </div>
             </div>
         </header>
         
         <nav class="admin-nav">
             <button class="nav-tab active" onclick="showAdminPage('orders', this)">
-                <i class="fas fa-clipboard-list"></i> الطلبات
+                <i class="fas fa-clipboard-list"></i>
+                <span>الطلبات</span>
             </button>
             <button class="nav-tab" onclick="showAdminPage('products', this)">
-                <i class="fas fa-boxes"></i> المنتجات
+                <i class="fas fa-boxes"></i>
+                <span>المنتجات</span>
             </button>
             <button class="nav-tab" onclick="showAdminPage('add-product', this)">
-                <i class="fas fa-plus-circle"></i> إضافة منتج
+                <i class="fas fa-plus-square"></i>
+                <span>إضافة منتج</span>
             </button>
             <button class="nav-tab" onclick="showAdminPage('categories', this)">
-                <i class="fas fa-tags"></i> التصنيفات
+                <i class="fas fa-tags"></i>
+                <span>التصنيفات</span>
             </button>
             <button class="nav-tab" onclick="showAdminPage('settings', this)">
-                <i class="fas fa-cog"></i> الإعدادات
+                <i class="fas fa-cogs"></i>
+                <span>الإعدادات</span>
             </button>
         </nav>
         
         <main class="admin-content">
+            <!-- الطلبات -->
             <div class="admin-page active" id="ordersPage">
                 <div class="content-card">
                     <div class="card-header">
                         <h2 class="card-title">
-                            <i class="fas fa-clipboard-list"></i> إدارة الطلبات
+                            <i class="fas fa-clipboard-list"></i>
+                            إدارة الطلبات
                         </h2>
                         <button class="btn btn-primary" onclick="refreshOrders()">
-                            <i class="fas fa-sync-alt"></i> تحديث
+                            <i class="fas fa-sync-alt"></i>
+                            تحديث
                         </button>
                     </div>
                     
                     <div class="contact-info">
-                        <h3>📞 أرقام التواصل مع الزبائن</h3>
-                        <p>تواصل مع الزبائن عبر الواتساب لتأكيد الطلبات والتفاصيل</p>
-                        <div class="contact-numbers" id="orderContacts">
+                        <div class="contact-header">
+                            <i class="fas fa-phone-volume"></i>
+                            <h3>أرقام التواصل السريع</h3>
                         </div>
+                        <p>تواصل مع الزبائن عبر الواتساب لتأكيد الطلبات</p>
+                        <div class="contact-numbers" id="orderContacts"></div>
                     </div>
                     
-                    <div class="orders-grid" id="ordersContainer">
-                    </div>
+                    <div class="orders-grid" id="ordersContainer"></div>
                 </div>
             </div>
             
+            <!-- المنتجات -->
             <div class="admin-page" id="productsPage">
                 <div class="content-card">
                     <div class="card-header">
                         <h2 class="card-title">
-                            <i class="fas fa-boxes"></i> إدارة المنتجات
+                            <i class="fas fa-boxes"></i>
+                            إدارة المنتجات
                         </h2>
                         <button class="btn btn-primary" onclick="showAdminPage('add-product')">
-                            <i class="fas fa-plus"></i> إضافة منتج جديد
+                            <i class="fas fa-plus"></i>
+                            منتج جديد
                         </button>
                     </div>
                     
-                    <div class="search-box" style="margin-bottom: 25px;">
-                        <input type="text" id="adminSearchInput" placeholder="🔍 ابحث عن منتج..." onkeyup="adminSearchProducts()">
+                    <div class="search-box admin-search">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="adminSearchInput" placeholder="ابحث في المنتجات..." onkeyup="adminSearchProducts()">
                     </div>
                     
-                    <div class="category-filters" id="adminCategoryFilters">
-                    </div>
-                    
-                    <div class="products-grid" id="adminProductsContainer">
-                    </div>
+                    <div class="category-filters" id="adminCategoryFilters"></div>
+                    <div class="products-grid" id="adminProductsContainer"></div>
                 </div>
             </div>
             
-            <div class="admin-page" id="addProductPage">
+            <!-- إضافة منتج -->
+            <div class="admin-page" id="add-productPage">
                 <div class="content-card">
                     <div class="card-header">
                         <h2 class="card-title" id="productFormTitle">
-                            <i class="fas fa-plus-circle"></i> إضافة منتج جديد
+                            <i class="fas fa-plus-square"></i>
+                            إضافة منتج جديد
                         </h2>
                         <button class="btn btn-secondary" onclick="showAdminPage('products')">
-                            <i class="fas fa-arrow-right"></i> رجوع
+                            <i class="fas fa-arrow-right"></i>
+                            رجوع
                         </button>
                     </div>
                     
-                    <form id="productForm" onsubmit="saveProduct(event)">
-                        <input type="hidden" id="productId" value="">
+                    <form id="productForm" onsubmit="saveProduct(event)" class="product-form">
+                        <input type="hidden" id="productId">
+                        <input type="hidden" id="currentImageUrl">
                         
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 25px;">
+                        <div class="form-grid">
                             <div class="form-group">
-                                <label>اسم المنتج *</label>
-                                <input type="text" id="productName" required>
+                                <label><i class="fas fa-tag"></i> اسم المنتج *</label>
+                                <input type="text" id="productName" required placeholder="مثال: شاحن سامسونج 25 وات">
                             </div>
+                            
                             <div class="form-group">
-                                <label>التصنيف *</label>
+                                <label><i class="fas fa-list-ul"></i> التصنيف *</label>
                                 <select id="productCategory" required>
                                     <option value="">اختر التصنيف</option>
                                 </select>
                             </div>
+                            
                             <div class="form-group">
-                                <label>السعر (جنيه) *</label>
-                                <input type="number" id="productPrice" required min="0" step="0.01">
+                                <label><i class="fas fa-money-bill-wave"></i> السعر (ج.م) *</label>
+                                <input type="number" id="productPrice" required min="0" step="0.01" placeholder="0.00">
                             </div>
+                            
                             <div class="form-group">
-                                <label>الكمية *</label>
-                                <input type="number" id="productQuantity" required min="0">
+                                <label><i class="fas fa-layer-group"></i> الكمية *</label>
+                                <input type="number" id="productQuantity" required min="0" placeholder="0">
                             </div>
+                            
                             <div class="form-group">
-                                <label>الحالة *</label>
+                                <label><i class="fas fa-toggle-on"></i> الحالة *</label>
                                 <select id="productStatus" required>
                                     <option value="available">متوفر</option>
                                     <option value="unavailable">غير متوفر</option>
@@ -211,114 +253,155 @@
                             </div>
                         </div>
                         
-                        <div class="form-group">
-                            <label>رابط الصورة (اختياري)</label>
-                            <input type="url" id="productImageUrl" placeholder="https://example.com/image.jpg">
-                            <p style="color: #666; font-size: 0.85em; margin-top: 5px;">
-                                <i class="fas fa-info-circle"></i> أدخل رابط صورة المنتج من الإنترنت (مثال: Unsplash, Pexels)
-                            </p>
+                        <div class="form-group full-width">
+                            <label><i class="fas fa-images"></i> صورة المنتج</label>
+                            <div class="image-upload-container">
+                                <div class="image-preview" id="imagePreview">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>انقر أو اسحب الصورة هنا</p>
+                                    <small>أقصى حجم: 10 MB • سيتم الضغط تلقائياً</small>
+                                </div>
+                                
+                                <div class="image-upload-controls">
+                                    <input type="file" id="productImage" accept="image/*" style="display:none" onchange="handleImageSelect(event)">
+                                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('productImage').click()">
+                                        <i class="fas fa-upload"></i>
+                                        اختر صورة
+                                    </button>
+                                    <button type="button" class="btn btn-danger" onclick="removeProductImage()" id="removeImageBtn" style="display:none">
+                                        <i class="fas fa-trash-alt"></i>
+                                        حذف
+                                    </button>
+                                </div>
+                                
+                                <div class="upload-progress" id="uploadProgress" style="display:none">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="progressFill"></div>
+                                    </div>
+                                    <p id="progressText">جاري الرفع... 0%</p>
+                                </div>
+                                
+                                <div class="upload-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>سيتم ضغط الصورة تلقائياً إلى 500 KB وتصغيرها إلى 800×800 بكسل</span>
+                                </div>
+                            </div>
                         </div>
                         
-                        <div class="form-group">
-                            <label>الوصف</label>
-                            <textarea id="productDescription" placeholder="وصف المنتج..." style="width: 100%; height: 120px;"></textarea>
+                        <div class="form-group full-width">
+                            <label><i class="fas fa-align-right"></i> الوصف</label>
+                            <textarea id="productDescription" placeholder="وصف تفصيلي للمنتج..." rows="5"></textarea>
                         </div>
                         
-                        <div class="form-group" style="display: flex; gap: 15px; margin-top: 30px;">
+                        <div class="form-actions">
                             <button type="submit" class="btn btn-primary" id="productSubmitBtn">
-                                <i class="fas fa-save"></i> حفظ المنتج
+                                <i class="fas fa-save"></i>
+                                حفظ المنتج
                             </button>
                             <button type="button" class="btn btn-secondary" onclick="resetProductForm()">
-                                <i class="fas fa-redo"></i> إعادة تعيين
+                                <i class="fas fa-redo"></i>
+                                إعادة تعيين
                             </button>
                         </div>
                     </form>
                 </div>
             </div>
             
+            <!-- التصنيفات -->
             <div class="admin-page" id="categoriesPage">
                 <div class="content-card">
                     <div class="card-header">
                         <h2 class="card-title">
-                            <i class="fas fa-tags"></i> إدارة التصنيفات
+                            <i class="fas fa-tags"></i>
+                            إدارة التصنيفات
                         </h2>
                         <button class="btn btn-secondary" onclick="showAdminPage('products')">
-                            <i class="fas fa-arrow-right"></i> رجوع
+                            <i class="fas fa-arrow-right"></i>
+                            رجوع
                         </button>
                     </div>
                     
-                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 15px; color: white; margin-bottom: 30px;">
-                        <p style="line-height: 1.8; display: flex; align-items: center; gap: 10px;">
-                            <i class="fas fa-info-circle"></i> أضف تصنيفات لتنظيم منتجاتك. التصنيفات تحفظ في قاعدة البيانات.
-                        </p>
+                    <div class="info-banner">
+                        <i class="fas fa-lightbulb"></i>
+                        <div>
+                            <h4>نصيحة مهمة</h4>
+                            <p>نظّم منتجاتك في تصنيفات واضحة لتسهيل البحث على الزبائن</p>
+                        </div>
                     </div>
                     
-                    <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-bottom: 25px;">
-                        <h3 style="color: var(--primary); margin-bottom: 20px; font-size: 1.3em;">
-                            <i class="fas fa-plus"></i> إضافة/تعديل تصنيف
-                        </h3>
-                        <form id="categoryForm" onsubmit="saveCategory(event)" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
-                            <input type="hidden" id="categoryId" value="">
-                            <div style="flex: 1; min-width: 200px;">
-                                <label>اسم التصنيف *</label>
-                                <input type="text" id="categoryName" placeholder="اسم التصنيف (مثال: شواحن)" required style="width: 100%;">
+                    <div class="category-form-card">
+                        <h3><i class="fas fa-plus-circle"></i> إضافة / تعديل تصنيف</h3>
+                        <form id="categoryForm" onsubmit="saveCategory(event)">
+                            <input type="hidden" id="categoryId">
+                            <div class="form-inline">
+                                <input type="text" id="categoryName" placeholder="اسم التصنيف (مثال: شواحن)" required>
+                                <button type="submit" class="btn btn-primary" id="categorySubmitBtn">
+                                    <i class="fas fa-plus"></i>
+                                    إضافة
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="resetCategoryForm()">
+                                    <i class="fas fa-times"></i>
+                                    إلغاء
+                                </button>
                             </div>
-                            <button type="submit" class="btn btn-primary" id="categorySubmitBtn" style="white-space: nowrap;">
-                                <i class="fas fa-plus"></i> إضافة
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="resetCategoryForm()" style="white-space: nowrap;">
-                                <i class="fas fa-times"></i> إلغاء
-                            </button>
                         </form>
                     </div>
                     
-                    <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05);">
-                        <h3 style="color: var(--primary); margin-bottom: 20px; font-size: 1.3em;">
-                            <i class="fas fa-list"></i> التصنيفات الحالية
-                        </h3>
-                        <div id="categoriesList" class="categories-list" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;">
-                        </div>
+                    <div class="categories-display">
+                        <h3><i class="fas fa-list"></i> التصنيفات الحالية</h3>
+                        <div id="categoriesList" class="categories-list"></div>
                     </div>
                 </div>
             </div>
             
+            <!-- الإعدادات -->
             <div class="admin-page" id="settingsPage">
                 <div class="content-card">
                     <div class="card-header">
                         <h2 class="card-title">
-                            <i class="fas fa-cog"></i> إعدادات النظام
+                            <i class="fas fa-cogs"></i>
+                            إعدادات النظام
                         </h2>
                         <button class="btn btn-secondary" onclick="showAdminPage('orders')">
-                            <i class="fas fa-arrow-right"></i> رجوع
+                            <i class="fas fa-arrow-right"></i>
+                            رجوع
                         </button>
                     </div>
                     
-                    <div style="background: #f8f9fa; padding: 25px; border-radius: 15px; margin-bottom: 25px;">
-                        <h3 style="color: var(--primary); margin-bottom: 20px; font-size: 1.3em;">
-                            <i class="fas fa-database"></i> إعدادات Supabase
-                        </h3>
+                    <div class="settings-section">
+                        <h3><i class="fas fa-database"></i> إعدادات Supabase</h3>
                         
-                        <div class="contact-info" style="background: linear-gradient(135deg, var(--info), #118ab2); margin-bottom: 20px;">
-                            <h3><i class="fas fa-info-circle"></i> معلومات الاتصال بـ Supabase</h3>
-                            <p>أدخل بيانات اتصال Supabase الخاصة بك هنا. احصل عليها من Supabase Dashboard → Settings → API</p>
+                        <div class="contact-info" style="margin-bottom:25px">
+                            <div class="contact-header">
+                                <i class="fas fa-info-circle"></i>
+                                <h4>كيفية الحصول على البيانات</h4>
+                            </div>
+                            <ol style="text-align:right;line-height:2">
+                                <li>افتح <a href="https://supabase.com" target="_blank" style="color:#fff">supabase.com</a></li>
+                                <li>اختر مشروعك → Settings → API</li>
+                                <li>انسخ URL و anon/public key</li>
+                            </ol>
                         </div>
                         
                         <div class="form-group">
-                            <label>Supabase URL</label>
-                            <input type="text" id="supabaseUrl" placeholder="https://xxxxxxxx.supabase.co" value="https://uljvprdjdqvvyenbxxpv.supabase.co">
+                            <label><i class="fas fa-link"></i> Supabase URL</label>
+                            <input type="text" id="supabaseUrl" placeholder="https://xxxxx.supabase.co" dir="ltr">
                         </div>
                         
                         <div class="form-group">
-                            <label>Supabase Anon Key</label>
-                            <input type="password" id="supabaseKey" placeholder="eyJhbGciOiJIUzI1NiIs..." value="sb_publishable_m7pZYKZgy3-LQeV26og_hg_iezPuo8U">
+                            <label><i class="fas fa-key"></i> Supabase Anon Key</label>
+                            <input type="password" id="supabaseKey" placeholder="eyJhbGciOi..." dir="ltr">
+                            <small>سيتم حفظها محلياً في المتصفح</small>
                         </div>
                         
-                        <div style="display: flex; gap: 15px; margin-top: 25px;">
+                        <div class="form-actions">
                             <button class="btn btn-primary" onclick="saveSupabaseSettings()">
-                                <i class="fas fa-save"></i> حفظ الإعدادات
+                                <i class="fas fa-save"></i>
+                                حفظ الإعدادات
                             </button>
-                            <button class="btn btn-danger" onclick="testSupabaseConnection()">
-                                <i class="fas fa-plug"></i> اختبار الاتصال
+                            <button class="btn btn-success" onclick="testSupabaseConnection()">
+                                <i class="fas fa-plug"></i>
+                                اختبار الاتصال
                             </button>
                         </div>
                     </div>
@@ -327,7 +410,9 @@
         </main>
     </div>
     
-    <!-- Modals -->
+    <!-- ========== النوافذ المنبثقة ========== -->
+    
+    <!-- دخول المدير -->
     <div class="modal" id="adminLoginModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -339,18 +424,13 @@
             <div class="modal-body">
                 <div class="form-group">
                     <label>كلمة المرور</label>
-                    <input type="password" id="adminPassword" placeholder="أدخل كلمة مرور المدير">
-                    <p style="color: #666; font-size: 0.9em; margin-top: 10px;">
-                        <i class="fas fa-info-circle"></i> كلمة المرور الافتراضية: admin123
-                    </p>
+                    <input type="password" id="adminPassword" placeholder="أدخل كلمة المرور">
+                    <small><i class="fas fa-info-circle"></i> الافتراضية: admin123</small>
                 </div>
-                
                 <div class="form-group">
                     <label>رقم هاتفك (اختياري)</label>
-                    <input type="tel" id="adminPhone" placeholder="01XXXXXXXXX" value="01123456789">
-                    <p style="color: #666; font-size: 0.9em; margin-top: 10px;">
-                        <i class="fas fa-info-circle"></i> سيظهر هذا الرقم في لوحة التحكم للتواصل مع الزبائن
-                    </p>
+                    <input type="tel" id="adminPhone" placeholder="01XXXXXXXXX">
+                    <small><i class="fas fa-info-circle"></i> سيظهر في لوحة التحكم</small>
                 </div>
             </div>
             <div class="modal-footer">
@@ -364,6 +444,7 @@
         </div>
     </div>
     
+    <!-- السلة -->
     <div class="modal" id="cartModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -373,8 +454,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div class="cart-items" id="cartItemsContainer">
-                </div>
+                <div class="cart-items" id="cartItemsContainer"></div>
                 
                 <div class="cart-summary">
                     <div class="summary-row">
@@ -392,16 +472,14 @@
                 </div>
                 
                 <div class="form-group">
-                    <label>رقم هاتفك *</label>
+                    <label><i class="fas fa-phone-alt"></i> رقم هاتفك *</label>
                     <input type="tel" id="customerPhone" placeholder="01XXXXXXXXX" required>
-                    <p style="color: #666; font-size: 0.9em; margin-top: 10px;">
-                        <i class="fas fa-info-circle"></i> هذا الرقم سيساعد المدير على التواصل معك لتأكيد الطلب
-                    </p>
+                    <small><i class="fas fa-info-circle"></i> للتواصل وتأكيد الطلب</small>
                 </div>
                 
                 <div class="form-group">
-                    <label>ملاحظات إضافية (اختياري)</label>
-                    <textarea id="orderNotes" placeholder="ملاحظات حول الطلب..." rows="3"></textarea>
+                    <label><i class="fas fa-comment-dots"></i> ملاحظات (اختياري)</label>
+                    <textarea id="orderNotes" placeholder="أي ملاحظات أو طلبات خاصة..." rows="3"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -415,42 +493,40 @@
         </div>
     </div>
     
+    <!-- نجاح الطلب -->
     <div class="modal" id="orderSuccessModal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-check-circle"></i> تم استلام طلبك</h3>
+            <div class="modal-header success-header">
+                <h3><i class="fas fa-check-circle"></i> تم استلام طلبك بنجاح</h3>
                 <button class="modal-close" onclick="closeOrderSuccessModal()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
-                <div style="text-align: center; padding: 20px;">
-                    <div style="font-size: 4em; color: var(--success); margin-bottom: 20px;">
+                <div class="success-content">
+                    <div class="success-icon">
                         <i class="fas fa-check-circle"></i>
                     </div>
-                    <h3 style="margin-bottom: 15px; color: var(--primary);">شكراً لك!</h3>
-                    <p style="color: #666; margin-bottom: 20px; line-height: 1.6;">
-                        تم استلام طلبك بنجاح وسيتواصل معك المدير قريباً على الرقم الذي قدمته.
-                    </p>
-                    <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                        <p style="font-weight: 700; margin-bottom: 10px;">رقم الطلب: <span id="orderNumber">#0000</span></p>
-                        <p style="color: #666; font-size: 0.9em;">احفظ هذا الرقم لمتابعة طلبك</p>
+                    <h3>شكراً لك!</h3>
+                    <p>تم استلام طلبك بنجاح وسيتواصل معك المدير قريباً</p>
+                    <div class="order-number-box">
+                        <span>رقم الطلب:</span>
+                        <strong id="orderNumber">#0000</strong>
+                        <small>احفظ هذا الرقم</small>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary" onclick="closeOrderSuccessModal()" style="width: 100%;">
-                    <i class="fas fa-home"></i> العودة إلى المتجر
+                <button class="btn btn-primary full-width" onclick="closeOrderSuccessModal()">
+                    <i class="fas fa-home"></i> العودة للمتجر
                 </button>
             </div>
         </div>
     </div>
     
-    <!-- Toast Notification -->
+    <!-- Toast -->
     <div class="toast" id="toast">
-        <div class="toast-icon">
-            <i class="fas fa-check"></i>
-        </div>
+        <div class="toast-icon"><i class="fas fa-check"></i></div>
         <div class="toast-content">
             <h4 id="toastTitle">نجاح</h4>
             <p id="toastMessage">تمت العملية بنجاح</p>
