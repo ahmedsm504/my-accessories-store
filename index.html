@@ -61,6 +61,22 @@
             z-index: 1;
         }
 
+        /* Admin Container (Hidden by default) */
+        .admin-container {
+            display: none;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .admin-container.show {
+            display: block;
+        }
+
+        .public-container.hide {
+            display: none;
+        }
+
         /* Header */
         .header {
             background: white;
@@ -458,18 +474,6 @@
             color: white;
         }
 
-        /* Admin Container (Hidden by default) */
-        .admin-container {
-            display: none;
-            min-height: 100vh;
-            position: relative;
-            z-index: 1;
-        }
-
-        .admin-container.active {
-            display: block;
-        }
-
         /* Admin Navigation */
         .admin-nav {
             display: flex;
@@ -533,6 +537,15 @@
             display: flex;
             align-items: center;
             gap: 10px;
+        }
+
+        /* Admin Pages */
+        .admin-page {
+            display: none;
+        }
+
+        .admin-page.active {
+            display: block;
         }
 
         /* Orders Page */
@@ -1552,7 +1565,6 @@
 
     <script>
         // ==================== إعدادات Supabase ====================
-        // ⚠️ ضع بياناتك هنا بعد إنشاء حساب Supabase ⚠️
         let SUPABASE_URL = localStorage.getItem('supabaseUrl') || 'https://uljvprdjdqvvyenbxxpv.supabase.co';
         let SUPABASE_KEY = localStorage.getItem('supabaseKey') || 'sb_publishable_m7pZYKZgy3-LQeV26og_hg_iezPuo8U';
         
@@ -1560,8 +1572,7 @@
         
         // ==================== إعدادات النظام ====================
         const APP_VERSION = '4.0';
-        const ADMIN_PASSWORD = 'admin123'; // كلمة مرور المدير (يمكن تغييرها)
-        const ADMIN_PHONE_NUMBER = localStorage.getItem('adminPhone') || '01XXXXXXXXX';
+        const ADMIN_PASSWORD = 'admin123'; // كلمة مرور المدير
         
         // ==================== حالة النظام ====================
         let isAdminLoggedIn = false;
@@ -1577,9 +1588,6 @@
         window.onload = async function() {
             // تحديث عداد السلة
             updateCartCount();
-            
-            // عرض المتجر العام
-            showStore();
             
             // إخفاء Toast
             hideToast();
@@ -1600,6 +1608,9 @@
             
             // تحديث رقم هاتف المدير في الواجهة
             updateAdminPhoneDisplay();
+            
+            // إظهار المتجر
+            showStore();
         };
         
         // ==================== إدارة Supabase ====================
@@ -1690,16 +1701,6 @@
                 console.error('❌ خطأ في تحميل البيانات:', error);
                 showToast('خطأ', 'فشل تحميل البيانات من قاعدة البيانات', 'error');
             }
-        }
-        
-        // ==================== إدارة البيانات ====================
-        function saveLocalData() {
-            localStorage.setItem('cart', JSON.stringify(cart));
-        }
-        
-        function loadLocalData() {
-            const savedCart = localStorage.getItem('cart');
-            if (savedCart) cart = JSON.parse(savedCart);
         }
         
         // ==================== تهيئة بيانات تجريبية ====================
@@ -1920,11 +1921,31 @@
             saveLocalData();
         }
         
+        // ==================== إدارة البيانات المحلية ====================
+        function saveLocalData() {
+            localStorage.setItem('cart', JSON.stringify(cart));
+        }
+        
+        function loadLocalData() {
+            const savedCart = localStorage.getItem('cart');
+            if (savedCart) cart = JSON.parse(savedCart);
+        }
+        
         // ==================== عرض المتجر ====================
         function showStore() {
-            document.getElementById('publicContainer').style.display = 'block';
-            document.getElementById('adminContainer').classList.remove('active');
+            document.getElementById('publicContainer').classList.remove('hide');
+            document.getElementById('adminContainer').classList.remove('show');
             displayProducts();
+        }
+        
+        function showAdminDashboard() {
+            document.getElementById('publicContainer').classList.add('hide');
+            document.getElementById('adminContainer').classList.add('show');
+            
+            // تحديث بيانات لوحة التحكم
+            adminSearchProducts();
+            displayOrders();
+            updateOrderContacts();
         }
         
         function displayProducts() {
@@ -2349,14 +2370,8 @@
             // إغلاق نافذة الدخول
             closeAdminLoginModal();
             
-            // إخفاء المتجر العام وإظهار لوحة التحكم
-            document.getElementById('publicContainer').style.display = 'none';
-            document.getElementById('adminContainer').classList.add('active');
-            
-            // تحديث بيانات لوحة التحكم
-            adminSearchProducts();
-            displayOrders();
-            updateOrderContacts();
+            // إظهار لوحة التحكم
+            showAdminDashboard();
             
             showToast('مرحباً', 'تم تسجيل الدخول بنجاح', 'success');
         }
@@ -2505,7 +2520,6 @@
             const quantity = parseInt(document.getElementById('productQuantity').value);
             const status = document.getElementById('productStatus').value;
             const description = document.getElementById('productDescription').value;
-            const imageFile = document.getElementById('productImage').files[0];
             
             if (!name || !category || isNaN(price) || isNaN(quantity)) {
                 showToast('خطأ', 'الرجاء ملء جميع الحقول المطلوبة', 'error');
@@ -2513,41 +2527,15 @@
             }
             
             try {
-                let imageUrl = '';
-                
-                // 1. رفع الصورة إذا كانت موجودة
-                if (imageFile) {
-                    const fileName = `product_${Date.now()}_${imageFile.name.replace(/\s+/g, '_')}`;
-                    
-                    // رفع الصورة إلى Supabase Storage
-                    const { data: uploadData, error: uploadError } = await supabase.storage
-                        .from('product-images')
-                        .upload(fileName, imageFile);
-                    
-                    if (uploadError) throw uploadError;
-                    
-                    // الحصول على رابط عام للصورة
-                    const { data: urlData } = supabase.storage
-                        .from('product-images')
-                        .getPublicUrl(fileName);
-                    
-                    imageUrl = urlData.publicUrl;
-                }
-                
-                // 2. إعداد بيانات المنتج
+                // إعداد بيانات المنتج
                 const productData = {
                     name,
                     category,
                     price,
                     quantity,
-                    status: quantity > 0 ? 'available' : 'unavailable',
+                    status: quantity > 0 ? status : 'unavailable',
                     description
                 };
-                
-                // إضافة رابط الصورة إذا تم رفعها
-                if (imageUrl) {
-                    productData.image_url = imageUrl;
-                }
                 
                 if (id) {
                     // تحديث منتج موجود
@@ -2569,10 +2557,10 @@
                     showToast('نجاح', 'تم إضافة المنتج بنجاح', 'success');
                 }
                 
-                // 3. إعادة تحميل البيانات
+                // إعادة تحميل البيانات
                 await loadDataFromSupabase();
                 
-                // 4. العودة لقائمة المنتجات
+                // العودة لقائمة المنتجات
                 showAdminPage('products');
                 
             } catch (error) {
@@ -2597,20 +2585,7 @@
             document.getElementById('productStatus').value = product.status;
             document.getElementById('productDescription').value = product.description || '';
             
-            const preview = document.getElementById('imagePreview');
-            if (product.image_url) {
-                preview.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <img src="${product.image_url}" style="max-width: 150px; max-height: 150px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);" onerror="this.style.display='none'">
-                        <div>
-                            <p style="margin-bottom: 5px; font-weight: 700;">صورة المنتج الحالية</p>
-                            <p style="color: #666; font-size: 0.9em;">سيتم استبدالها إذا اخترت صورة جديدة</p>
-                        </div>
-                    </div>
-                `;
-            } else {
-                preview.innerHTML = '';
-            }
+            updateCategorySelects();
             
             document.getElementById('productFormTitle').innerHTML = '<i class="fas fa-edit"></i> تعديل المنتج';
             document.getElementById('productSubmitBtn').innerHTML = '<i class="fas fa-save"></i> حفظ التغييرات';
@@ -2645,7 +2620,6 @@
         function resetProductForm() {
             document.getElementById('productForm').reset();
             document.getElementById('productId').value = '';
-            document.getElementById('imagePreview').innerHTML = '';
             document.getElementById('productFormTitle').innerHTML = '<i class="fas fa-plus-circle"></i> إضافة منتج جديد';
             document.getElementById('productSubmitBtn').innerHTML = '<i class="fas fa-save"></i> حفظ المنتج';
             updateCategorySelects();
@@ -2754,7 +2728,6 @@
                         return;
                     }
                     
-                    // مجرد إضافة للقائمة المحلية (لا يوجد جدول منفصل للتصنيفات)
                     showToast('نجاح', 'تم إضافة التصنيف بنجاح', 'success');
                 }
                 
