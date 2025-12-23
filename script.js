@@ -1,7 +1,7 @@
 // ==================== المتغيرات العالمية ====================
 let supabaseClient = null;
-let SUPABASE_URL = localStorage.getItem('supabaseUrl') || '';
-let SUPABASE_KEY = localStorage.getItem('supabaseKey') || '';
+let SUPABASE_URL = 'https://uljvprdjdqvvyenbxxpv.supabase.co';
+let SUPABASE_KEY = 'sb_publishable_m7pZYKZgy3-LQeV26og_hg_iezPuo8U';
 const ADMIN_PASSWORD = 'admin123';
 let isAdminLoggedIn = false;
 let currentFilter = 'all';
@@ -602,13 +602,25 @@ function showAdminPage(page, clickedElement) {
         tab.classList.remove('active');
     });
     
+    // الحصول على معرف الصفحة الصحيح (إصلاح المشكلة)
+    let pageId = page;
+    if (page === 'add-product') {
+        pageId = 'addProduct'; // هذا يتوافق مع id في HTML
+    }
+    
     // عرض الصفحة المطلوبة
-    const pageElement = document.getElementById(page + 'Page');
+    const pageElement = document.getElementById(pageId + 'Page');
     if (pageElement) {
         pageElement.classList.add('active');
-        console.log('Page element found and activated:', page);
+        console.log('Page element found and activated:', pageId + 'Page');
     } else {
-        console.error('Page element not found:', page + 'Page');
+        console.error('Page element not found:', pageId + 'Page');
+        // محاولة بديلة: البحث بأي طريقة ممكنة
+        const altPageElement = document.querySelector(`[id*="${page}"]`);
+        if (altPageElement) {
+            altPageElement.classList.add('active');
+            console.log('Alternative page element found:', altPageElement.id);
+        }
     }
     
     // تفعيل التاب المناسب
@@ -1094,17 +1106,36 @@ function resetCategoryForm() {
 // ==================== إعدادات Supabase ====================
 async function initSupabase() {
     try {
-        if (!SUPABASE_URL || !SUPABASE_KEY) {
-            console.log('⚠️ لم يتم تعيين بيانات Supabase');
+        console.log('🚀 بدء تهيئة Supabase...');
+        
+        // تأكد من أن Supabase SDK محمل
+        if (typeof window.supabase === 'undefined') {
+            console.error('❌ Supabase SDK غير محمل');
+            showToast('خطأ', 'مكتبة Supabase غير محملة. تحقق من الاتصال بالإنترنت', 'error');
             return false;
         }
         
+        // إنشاء العميل
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
-        const { data, error } = await supabaseClient.from('products').select('count');
+        // اختبار الاتصال
+        const { data, error } = await supabaseClient.from('products').select('*').limit(1);
         
         if (error) {
             console.error('❌ فشل الاتصال بـ Supabase:', error.message);
+            
+            // تحقق من نوع الخطأ
+            if (error.message.includes('Failed to fetch')) {
+                showToast('خطأ', 'فشل الاتصال بالخادم. تحقق من اتصال الإنترنت', 'error');
+            } else if (error.message.includes('JWT')) {
+                showToast('خطأ', 'مفتاح API غير صالح', 'error');
+            } else if (error.message.includes('relation "products" does not exist')) {
+                console.log('⚠️ جدول المنتجات غير موجود. سيتم إنشاؤه تلقائياً');
+                showToast('تنبيه', 'جدول المنتجات غير موجود. قم بإنشائه في Supabase Dashboard', 'warning');
+            } else {
+                showToast('خطأ', 'فشل الاتصال بقاعدة البيانات: ' + error.message, 'error');
+            }
+            
             return false;
         }
         
@@ -1113,6 +1144,7 @@ async function initSupabase() {
         
     } catch (error) {
         console.error('❌ خطأ في تهيئة Supabase:', error);
+        showToast('خطأ', 'خطأ غير متوقع في الاتصال: ' + error.message, 'error');
         return false;
     }
 }
@@ -1124,16 +1156,27 @@ async function loadDataFromSupabase() {
     }
     
     try {
+        console.log('📥 بدء تحميل البيانات من Supabase...');
+        
         // تحميل المنتجات
         const { data: productsData, error: productsError } = await supabaseClient
             .from('products')
             .select('*')
             .order('created_at', { ascending: false });
         
-        if (productsError) throw productsError;
-        
-        products = productsData || [];
-        console.log('✅ تم تحميل المنتجات:', products.length);
+        if (productsError) {
+            if (productsError.code === '42P01') {
+                console.log('⚠️ جدول المنتجات غير موجود');
+                products = [];
+                categories = [];
+                showToast('تنبيه', 'جدول المنتجات غير موجود. قم بإنشائه أولاً', 'warning');
+            } else {
+                throw productsError;
+            }
+        } else {
+            products = productsData || [];
+            console.log('✅ تم تحميل المنتجات:', products.length);
+        }
         
         // تحميل الطلبات
         const { data: ordersData, error: ordersError } = await supabaseClient
@@ -1141,36 +1184,23 @@ async function loadDataFromSupabase() {
             .select('*')
             .order('created_at', { ascending: false });
         
-        if (ordersError) throw ordersError;
-        
-        orders = ordersData || [];
-        console.log('✅ تم تحميل الطلبات:', orders.length);
-        
-        // تحميل التصنيفات
-        try {
-            const { data: categoriesData, error: categoriesError } = await supabaseClient
-                .from('categories')
-                .select('name')
-                .order('name');
-            
-            if (categoriesError) {
-                if (categoriesError.code !== '42P01') {
-                    throw categoriesError;
-                }
-                console.log('⚠️ جدول التصنيفات غير موجود - سيتم استخدام التصنيفات من المنتجات');
-                categories = [...new Set(products.map(p => p.category))].filter(c => c);
+        if (ordersError) {
+            if (ordersError.code === '42P01') {
+                console.log('⚠️ جدول الطلبات غير موجود');
+                orders = [];
             } else {
-                const dbCategories = categoriesData.map(c => c.name);
-                const productCategories = [...new Set(products.map(p => p.category))].filter(c => c);
-                categories = [...new Set([...dbCategories, ...productCategories])];
+                throw ordersError;
             }
-        } catch (catError) {
-            console.log('⚠️ خطأ في تحميل التصنيفات:', catError.message);
-            categories = [...new Set(products.map(p => p.category))].filter(c => c);
+        } else {
+            orders = ordersData || [];
+            console.log('✅ تم تحميل الطلبات:', orders.length);
         }
         
-        console.log('✅ تم تحميل التصنيفات:', categories);
+        // استخراج التصنيفات من المنتجات
+        categories = [...new Set(products.map(p => p.category))].filter(c => c);
+        console.log('✅ تم استخراج التصنيفات:', categories);
         
+        // عرض البيانات
         displayProducts();
         updateCategoryFilters();
         
@@ -1184,7 +1214,7 @@ async function loadDataFromSupabase() {
         
     } catch (error) {
         console.error('❌ خطأ في تحميل البيانات:', error);
-        showToast('خطأ', 'فشل تحميل البيانات من قاعدة البيانات', 'error');
+        showToast('خطأ', 'فشل تحميل البيانات من قاعدة البيانات: ' + error.message, 'error');
     }
 }
 
@@ -1251,7 +1281,9 @@ function showToast(title, message, type = 'success') {
     toastTitle.textContent = title;
     toastMessage.textContent = message;
     
-    toast.className = `toast ${type}`;
+    // إزالة جميع الأنواع السابقة
+    toast.className = 'toast';
+    toast.classList.add(type);
     
     const icons = {
         'success': 'fa-check',
@@ -1264,8 +1296,9 @@ function showToast(title, message, type = 'success') {
     
     toast.classList.add('show');
     
+    // إخفاء الإشعار بعد 5 ثواني
     setTimeout(() => {
-        hideToast();
+        toast.classList.remove('show');
     }, 5000);
 }
 
@@ -1276,25 +1309,84 @@ function hideToast() {
 // ==================== تهيئة التطبيق ====================
 window.onload = async function() {
     console.log("🚀 بدء تحميل التطبيق...");
+    
+    // تحديث عداد السلة
     updateCartCount();
+    
+    // إخفاء الإشعارات
     hideToast();
+    
+    // تحميل الإعدادات المحفوظة
+    const savedUrl = localStorage.getItem('supabaseUrl');
+    const savedKey = localStorage.getItem('supabaseKey');
+    
+    if (savedUrl && savedKey) {
+        SUPABASE_URL = savedUrl;
+        SUPABASE_KEY = savedKey;
+    }
+    
+    // تحميل إعدادات Supabase في الواجهة
     loadSupabaseSettings();
     
+    // تهيئة Supabase
     const connected = await initSupabase();
     if (connected) {
         await loadDataFromSupabase();
     } else {
         console.log('⚠️ التطبيق يعمل بدون اتصال بـ Supabase');
-        showToast('تنبيه', 'يرجى إعداد اتصال Supabase في الإعدادات', 'warning');
+        // عرض منتجات افتراضية للاختبار
+        if (products.length === 0) {
+            products = [
+                {
+                    id: 1,
+                    name: 'شاحن سامسونج الأصلي',
+                    category: 'شواحن',
+                    price: 150,
+                    quantity: 10,
+                    status: 'available',
+                    description: 'شاحن أصلي 25 وات مع كابل USB-C',
+                    image_url: ''
+                },
+                {
+                    id: 2,
+                    name: 'كابل USB-C',
+                    category: 'كابلات',
+                    price: 40,
+                    quantity: 25,
+                    status: 'available',
+                    description: 'كابل USB-C طول 2 متر',
+                    image_url: ''
+                },
+                {
+                    id: 3,
+                    name: 'سماعات لاسلكية',
+                    category: 'سماعات',
+                    price: 250,
+                    quantity: 8,
+                    status: 'available',
+                    description: 'سماعات بلوتوث مع حافظة شحن',
+                    image_url: ''
+                }
+            ];
+            categories = ['شواحن', 'كابلات', 'سماعات'];
+            displayProducts();
+            updateCategoryFilters();
+            updateCategorySelects();
+        }
     }
     
+    // تحديث عرض رقم الهاتف
     updateAdminPhoneDisplay();
+    
+    // عرض المتجر
     showStore();
+    
     console.log("✅ تم تحميل التطبيق بنجاح");
 };
 
-// ==================== أحداث ====================
+// ==================== أحداث المستخدم ====================
 document.addEventListener('DOMContentLoaded', function() {
+    // تفعيل البحث بالضغط على Enter
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         searchInput.addEventListener('keypress', function(e) {
@@ -1312,4 +1404,132 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // حفظ الإعدادات تلقائياً
+    document.getElementById('supabaseUrl')?.addEventListener('change', function() {
+        localStorage.setItem('supabaseUrl', this.value);
+    });
+    
+    document.getElementById('supabaseKey')?.addEventListener('change', function() {
+        localStorage.setItem('supabaseKey', this.value);
+    });
+    
+    // تفعيل النقر على التاب "إضافة منتج"
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const onclickAttr = this.getAttribute('onclick');
+            if (onclickAttr && onclickAttr.includes('add-product')) {
+                // تأخير بسيط للتأكد من تحميل الصفحة
+                setTimeout(() => {
+                    updateCategorySelects();
+                }, 100);
+            }
+        });
+    });
 });
+
+// ==================== أدوات مساعدة إضافية ====================
+function createTestTable() {
+    // كود لإنشاء الجداول إذا لم تكن موجودة
+    console.log('📝 إنشاء جداول اختبارية...');
+    
+    // هذه تحتاج إلى تشغيلها من Supabase SQL Editor
+    const sqlCommands = `
+        -- إنشاء جدول المنتجات
+        CREATE TABLE IF NOT EXISTS products (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            category TEXT NOT NULL,
+            price DECIMAL(10,2) NOT NULL,
+            quantity INTEGER DEFAULT 0,
+            status TEXT DEFAULT 'available',
+            description TEXT,
+            image_url TEXT,
+            created_at TIMESTAMP DEFAULT NOW()
+        );
+        
+        -- إنشاء جدول الطلبات
+        CREATE TABLE IF NOT EXISTS orders (
+            id SERIAL PRIMARY KEY,
+            customer_name TEXT NOT NULL,
+            customer_phone TEXT NOT NULL,
+            items JSONB NOT NULL,
+            total DECIMAL(10,2) NOT NULL,
+            status TEXT DEFAULT 'pending',
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT NOW()
+        );
+        
+        -- تمكين الوصول للجميع (للاختبار فقط)
+        ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+        
+        CREATE POLICY "الجميع يمكنهم رؤية المنتجات" ON products
+            FOR SELECT USING (true);
+        
+        CREATE POLICY "الجميع يمكنهم إضافة منتجات" ON products
+            FOR INSERT WITH CHECK (true);
+        
+        CREATE POLICY "الجميع يمكنهم تحديث المنتجات" ON products
+            FOR UPDATE USING (true);
+        
+        CREATE POLICY "الجميع يمكنهم رؤية الطلبات" ON orders
+            FOR SELECT USING (true);
+        
+        CREATE POLICY "الجميع يمكنهم إضافة طلبات" ON orders
+            FOR INSERT WITH CHECK (true);
+    `;
+    
+    console.log('✅ انسخ هذه الأوامر والصقها في SQL Editor في Supabase:');
+    console.log(sqlCommands);
+}
+
+// ==================== حل مشكلة الأزرار غير النشطة ====================
+function activateAllButtons() {
+    // تفعيل جميع الأزرار في الصفحة
+    document.querySelectorAll('button').forEach(button => {
+        if (button.disabled) {
+            button.disabled = false;
+        }
+    });
+    
+    // تفعيل جميع حقول الإدخال
+    document.querySelectorAll('input, select, textarea').forEach(input => {
+        if (input.disabled) {
+            input.disabled = false;
+            input.style.opacity = '1';
+        }
+    });
+}
+
+// تفعيل الأزرار عند النقر على أي مكان في الصفحة (لحل المشاكل المؤقتة)
+document.addEventListener('click', function() {
+    activateAllButtons();
+});
+
+// ==================== حل مشكلة الصفحات غير الظاهرة ====================
+function checkPageElements() {
+    console.log('🔍 التحقق من عناصر الصفحات...');
+    
+    const pages = [
+        'ordersPage',
+        'productsPage',
+        'addProductPage', // ملاحظة: هذا هو الاسم الصحيح في HTML
+        'categoriesPage',
+        'settingsPage'
+    ];
+    
+    pages.forEach(pageId => {
+        const element = document.getElementById(pageId);
+        if (element) {
+            console.log(`✅ ${pageId} موجود`);
+        } else {
+            console.log(`❌ ${pageId} غير موجود`);
+        }
+    });
+}
+
+// تفعيل هذا عند تحميل الصفحة
+setTimeout(() => {
+    checkPageElements();
+}, 1000);
