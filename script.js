@@ -1,7 +1,7 @@
 // ==================== المتغيرات العالمية ====================
 let supabaseClient = null;
-let SUPABASE_URL = '';
-let SUPABASE_KEY = '';
+let SUPABASE_URL = 'https://uljvprdjdqvvyenbxxpv.supabase.co';
+let SUPABASE_KEY = 'sb_publishable_m7pZYKZgy3-LQeV26og_hg_iezPuo8U';
 const ADMIN_PASSWORD = 'Samir012700@';
 let isAdminLoggedIn = false;
 let currentFilter = 'all';
