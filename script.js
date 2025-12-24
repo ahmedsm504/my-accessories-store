@@ -109,7 +109,6 @@ async function uploadImageToSupabase(file, dataURL) {
     try {
         console.log('🚀 بدء رفع الصورة...');
         
-        // تحويل DataURL إلى Blob
         const response = await fetch(dataURL);
         const blob = await response.blob();
         
@@ -124,7 +123,6 @@ async function uploadImageToSupabase(file, dataURL) {
         document.getElementById('uploadProgress').style.display = 'block';
         updateProgress(30);
         
-        // رفع الصورة إلى Supabase Storage
         const { data, error } = await supabaseClient
             .storage
             .from('product-images')
@@ -142,7 +140,6 @@ async function uploadImageToSupabase(file, dataURL) {
         console.log('✅ تم رفع الصورة:', data);
         updateProgress(70);
         
-        // الحصول على الرابط العام للصورة
         const { data: urlData } = supabaseClient
             .storage
             .from('product-images')
@@ -152,7 +149,6 @@ async function uploadImageToSupabase(file, dataURL) {
         
         console.log('🔗 الرابط العام:', publicUrl);
         
-        // اختبار الصورة
         const imgTest = await testImageUrl(publicUrl);
         console.log('🧪 اختبار الصورة:', imgTest ? '✅ ناجح' : '❌ فاشل');
         
@@ -229,7 +225,7 @@ async function testImageUrl(url) {
             resolve(false);
         };
         img.src = url;
-        setTimeout(() => resolve(false), 5000); // timeout بعد 5 ثواني
+        setTimeout(() => resolve(false), 5000);
     });
 }
 
@@ -387,9 +383,7 @@ function displayProducts() {
     container.innerHTML = filteredProducts.map(product => {
         let imageHtml = '';
         
-        // تحسين عرض الصور
         if (product.image_url && product.image_url.trim() !== '' && product.image_url !== 'null') {
-            // إضافة cache buster
             const imageUrl = product.image_url.includes('?') 
                 ? product.image_url 
                 : product.image_url + '?v=' + Date.now();
@@ -427,7 +421,7 @@ function displayProducts() {
                     </div>
                     <div class="product-actions">
                         <button class="btn btn-primary" onclick="addToCart(${product.id})">
-                            <i class="fas fa-cart-plus"></i> أضف إلى السلة
+                            <i class="fas fa-shopping-cart"></i> أضف إلى السلة
                         </button>
                     </div>
                 </div>
@@ -640,19 +634,51 @@ function logoutAdmin() {
 }
 
 function showAdminPage(page, clickedElement) {
+    console.log('🔄 التبديل إلى صفحة:', page);
+    
     document.querySelectorAll('.admin-page').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
     
     const pageElement = document.getElementById(page + 'Page');
-    if (pageElement) pageElement.classList.add('active');
-    if (clickedElement) clickedElement.classList.add('active');
+    if (pageElement) {
+        pageElement.classList.add('active');
+        console.log('✅ تم إظهار صفحة:', page);
+    }
+    
+    if (clickedElement) {
+        clickedElement.classList.add('active');
+    } else {
+        const tabs = document.querySelectorAll('.nav-tab');
+        tabs.forEach(tab => {
+            const tabOnClick = tab.getAttribute('onclick');
+            if (tabOnClick && tabOnClick.includes(`'${page}'`)) {
+                tab.classList.add('active');
+            }
+        });
+    }
     
     switch(page) {
-        case 'orders': displayOrders(); updateOrderContacts(); break;
-        case 'products': adminSearchProducts(); updateAdminCategoryFilters(); break;
-        case 'add-product': resetProductForm(); updateCategorySelects(); break;
-        case 'categories': displayCategories(); break;
-        case 'settings': loadSupabaseSettings(); break;
+        case 'orders': 
+            displayOrders(); 
+            updateOrderContacts(); 
+            break;
+        case 'products': 
+            currentFilter = 'all';
+            adminSearchProducts(); 
+            updateAdminCategoryFilters(); 
+            break;
+        case 'add-product': 
+            updateCategorySelects(); 
+            break;
+        case 'categories': 
+            displayCategories(); 
+            break;
+        case 'settings': 
+            loadSupabaseSettings(); 
+            break;
+        case 'reports':
+            displayReports();
+            break;
     }
 }
 
@@ -769,21 +795,17 @@ async function saveProduct(event) {
     }
     
     try {
-        // رفع الصورة إذا تم اختيار صورة جديدة
         if (selectedImageFile && selectedImageDataURL) {
             console.log('🚀 بدء رفع صورة جديدة...');
             showToast('جاري الرفع', 'جاري رفع الصورة...', 'info');
             
-            // حذف الصورة القديمة
             if (imageUrl && imageUrl !== 'null') {
                 await deleteImageFromSupabase(imageUrl);
             }
             
-            // رفع الصورة الجديدة
             imageUrl = await uploadImageToSupabase(selectedImageFile, selectedImageDataURL);
             console.log('✅ رابط الصورة الجديد:', imageUrl);
             
-            // اختبار الصورة
             const testResult = await testImageUrl(imageUrl);
             console.log('🧪 نتيجة اختبار الصورة:', testResult ? '✅ ناجح' : '❌ فاشل');
         }
@@ -835,6 +857,8 @@ async function saveProduct(event) {
 }
 
 function editProduct(id) {
+    console.log('✏️ تعديل المنتج رقم:', id);
+    
     const product = products.find(p => p.id == id);
     if (!product) {
         showToast('خطأ', 'المنتج غير موجود', 'error');
@@ -851,16 +875,22 @@ function editProduct(id) {
     
     if (product.image_url && product.image_url.trim() !== '' && product.image_url !== 'null') {
         const preview = document.getElementById('imagePreview');
-        preview.innerHTML = `<img src="${product.image_url}" alt="${product.name}">`;
+        preview.innerHTML = `<img src="${product.image_url}" alt="${product.name}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
         document.getElementById('currentImageUrl').value = product.image_url;
         document.getElementById('removeImageBtn').style.display = 'inline-flex';
     } else {
-        removeProductImage();
+        const preview = document.getElementById('imagePreview');
+        preview.innerHTML = '<i class="fas fa-cloud-upload-alt"></i><p>انقر أو اسحب الصورة هنا</p><small>أقصى حجم: 10 MB</small>';
+        document.getElementById('currentImageUrl').value = '';
+        document.getElementById('removeImageBtn').style.display = 'none';
     }
     
     document.getElementById('productFormTitle').innerHTML = '<i class="fas fa-edit"></i> تعديل المنتج';
     document.getElementById('productSubmitBtn').innerHTML = '<i class="fas fa-save"></i> حفظ التغييرات';
+    
     showAdminPage('add-product');
+    
+    console.log('✅ تم تحميل بيانات المنتج للتعديل');
 }
 
 async function deleteProduct(id) {
@@ -986,6 +1016,225 @@ function resetCategoryForm() {
     document.getElementById('categorySubmitBtn').innerHTML = '<i class="fas fa-plus"></i> إضافة';
 }
 
+// ==================== التقارير ====================
+function displayReports() {
+    console.log('📊 عرض التقارير...');
+    
+    const totalProducts = products.length;
+    const availableProducts = products.filter(p => p.status === 'available').length;
+    const outOfStock = products.filter(p => p.quantity === 0).length;
+    const totalInventoryValue = products.reduce((sum, p) => sum + (p.price * p.quantity), 0);
+    
+    const totalOrders = orders.length;
+    const pendingOrders = orders.filter(o => o.status === 'pending').length;
+    const processingOrders = orders.filter(o => o.status === 'processing').length;
+    const completedOrders = orders.filter(o => o.status === 'completed').length;
+    const totalRevenue = orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.total, 0);
+    const expectedRevenue = orders.filter(o => o.status !== 'completed').reduce((sum, o) => sum + o.total, 0);
+    
+    const productSales = {};
+    orders.forEach(order => {
+        if (Array.isArray(order.items)) {
+            order.items.forEach(item => {
+                if (productSales[item.name]) {
+                    productSales[item.name] += item.quantity;
+                } else {
+                    productSales[item.name] = item.quantity;
+                }
+            });
+        }
+    });
+    const topProducts = Object.entries(productSales)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+    
+    const categorySales = {};
+    orders.forEach(order => {
+        if (Array.isArray(order.items)) {
+            order.items.forEach(item => {
+                const product = products.find(p => p.name === item.name);
+                if (product) {
+                    const cat = product.category;
+                    if (categorySales[cat]) {
+                        categorySales[cat] += item.quantity;
+                    } else {
+                        categorySales[cat] = item.quantity;
+                    }
+                }
+            });
+        }
+    });
+    
+    const last7Days = [];
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toLocaleDateString('ar-EG');
+        const dayOrders = orders.filter(o => {
+            const orderDate = new Date(o.created_at).toLocaleDateString('ar-EG');
+            return orderDate === dateStr;
+        });
+        last7Days.push({ date: dateStr, count: dayOrders.length, revenue: dayOrders.reduce((sum, o) => sum + o.total, 0) });
+    }
+    
+    const reportsHTML = `
+        <div class="stats-grid">
+            <div class="stat-card stat-primary">
+                <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+                <div class="stat-info">
+                    <h3>${totalOrders}</h3>
+                    <p>إجمالي الطلبات</p>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-warning">
+                <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                <div class="stat-info">
+                    <h3>${pendingOrders}</h3>
+                    <p>طلبات معلقة</p>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-info">
+                <div class="stat-icon"><i class="fas fa-cogs"></i></div>
+                <div class="stat-info">
+                    <h3>${processingOrders}</h3>
+                    <p>قيد التجهيز</p>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-success">
+                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-info">
+                    <h3>${completedOrders}</h3>
+                    <p>طلبات مكتملة</p>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-money">
+                <div class="stat-icon"><i class="fas fa-coins"></i></div>
+                <div class="stat-info">
+                    <h3>${totalRevenue.toFixed(2)} ج.م</h3>
+                    <p>إجمالي الإيرادات</p>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-pending-money">
+                <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+                <div class="stat-info">
+                    <h3>${expectedRevenue.toFixed(2)} ج.م</h3>
+                    <p>إيرادات متوقعة</p>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-products">
+                <div class="stat-icon"><i class="fas fa-boxes"></i></div>
+                <div class="stat-info">
+                    <h3>${totalProducts}</h3>
+                    <p>إجمالي المنتجات</p>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-danger">
+                <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="stat-info">
+                    <h3>${outOfStock}</h3>
+                    <p>منتجات نفذت</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="reports-grid">
+            <div class="report-card">
+                <h3><i class="fas fa-star"></i> أكثر المنتجات مبيعاً</h3>
+                <div class="top-products">
+                    ${topProducts.length > 0 ? topProducts.map((item, index) => `
+                        <div class="top-product-item">
+                            <span class="rank">#${index + 1}</span>
+                            <span class="product-name">${item[0]}</span>
+                            <span class="sales-count">${item[1]} قطعة</span>
+                        </div>
+                    `).join('') : '<p class="no-data">لا توجد مبيعات بعد</p>'}
+                </div>
+            </div>
+            
+            <div class="report-card">
+                <h3><i class="fas fa-chart-pie"></i> المبيعات حسب التصنيف</h3>
+                <div class="category-sales">
+                    ${Object.entries(categorySales).length > 0 ? Object.entries(categorySales).map(([cat, count]) => `
+                        <div class="category-sale-item">
+                            <span class="category-name">${cat}</span>
+                            <div class="sale-bar-container">
+                                <div class="sale-bar" style="width: ${(count / Math.max(...Object.values(categorySales))) * 100}%"></div>
+                            </div>
+                            <span class="sale-count">${count}</span>
+                        </div>
+                    `).join('') : '<p class="no-data">لا توجد مبيعات بعد</p>'}
+                </div>
+            </div>
+            
+            <div class="report-card full-width">
+                <h3><i class="fas fa-chart-line"></i> الطلبات خلال آخر 7 أيام</h3>
+                <div class="daily-orders">
+                    ${last7Days.map(day => `
+                        <div class="daily-order-item">
+                            <span class="day-date">${day.date}</span>
+                            <div class="day-stats">
+                                <span class="day-orders"><i class="fas fa-shopping-cart"></i> ${day.count} طلب</span>
+                                <span class="day-revenue"><i class="fas fa-coins"></i> ${day.revenue.toFixed(2)} ج.م</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            
+            <div class="report-card full-width">
+                <h3><i class="fas fa-exclamation-circle"></i> تحذير: منتجات قليلة المخزون</h3>
+                <div class="low-stock-products">
+                    ${products.filter(p => p.quantity < 5 && p.quantity > 0).length > 0 ? products.filter(p => p.quantity < 5 && p.quantity > 0).map(product => `
+                        <div class="low-stock-item">
+                            <span class="product-name">${product.name}</span>
+                            <span class="stock-warning">متبقي ${product.quantity} فقط</span>
+                            <button class="btn btn-sm btn-primary" onclick="editProduct(${product.id})">
+                                <i class="fas fa-edit"></i> تعديل
+                            </button>
+                        </div>
+                    `).join('') : '<p class="no-data">جميع المنتجات لديها مخزون كافٍ ✓</p>'}
+                </div>
+            </div>
+        </div>
+        
+        <div class="export-actions">
+            <button class="btn btn-success" onclick="exportReportToExcel()">
+                <i class="fas fa-file-excel"></i> تصدير إلى Excel
+            </button>
+            <button class="btn btn-danger" onclick="exportReportToPDF()">
+                <i class="fas fa-file-pdf"></i> تصدير إلى PDF
+            </button>
+            <button class="btn btn-primary" onclick="printReport()">
+                <i class="fas fa-print"></i> طباعة التقرير
+            </button>
+        </div>
+    `;
+    
+    const container = document.getElementById('reportsContainer');
+    if (container) {
+        container.innerHTML = reportsHTML;
+    }
+}
+
+function exportReportToExcel() {
+    showToast('قريباً', 'ميزة التصدير إلى Excel قيد التطوير', 'info');
+}
+
+function exportReportToPDF() {
+    showToast('قريباً', 'ميزة التصدير إلى PDF قيد التطوير', 'info');
+}
+
+function printReport() {
+    window.print();
+}
+
 // ==================== إعدادات Supabase ====================
 async function initSupabase() {
     try {
@@ -1028,16 +1277,6 @@ async function loadDataFromSupabase() {
         
         products = productsData || [];
         console.log('📦 تم تحميل', products.length, 'منتج');
-        
-        // فحص روابط الصور بالتفصيل
-        console.log('🖼️ فحص الصور:');
-        for (const product of products) {
-            if (product.image_url) {
-                console.log(`  - ${product.name}:`, product.image_url);
-                const isValid = await testImageUrl(product.image_url);
-                console.log(`    الحالة: ${isValid ? '✅ صالحة' : '❌ غير صالحة'}`);
-            }
-        }
         
         const { data: ordersData } = await supabaseClient
             .from('orders')
@@ -1132,6 +1371,24 @@ function showToast(title, message, type = 'success') {
 
 function hideToast() { document.getElementById('toast').classList.remove('show'); }
 
+// ==================== Loading Screen Functions ====================
+function updateLoadingText(text) {
+    const loadingText = document.querySelector('.loading-text');
+    if (loadingText) {
+        loadingText.textContent = text;
+    }
+}
+
+function hideLoadingScreen() {
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen) {
+        loadingScreen.classList.add('hidden');
+        setTimeout(() => {
+            loadingScreen.remove();
+        }, 500);
+    }
+}
+
 // ==================== تهيئة التطبيق ====================
 window.onload = async function() {
     console.log('🚀 بدء تحميل التطبيق...');
@@ -1148,8 +1405,12 @@ window.onload = async function() {
     }
     
     loadSupabaseSettings();
+    
+    updateLoadingText('جاري الاتصال بقاعدة البيانات...');
+    
     const connected = await initSupabase();
     if (connected) {
+        updateLoadingText('جاري تحميل المنتجات...');
         await loadDataFromSupabase();
     } else {
         showToast('تنبيه', 'يرجى إعداد اتصال Supabase', 'warning');
@@ -1162,6 +1423,11 @@ window.onload = async function() {
     }
     
     showStore();
+    
+    setTimeout(() => {
+        hideLoadingScreen();
+    }, 1000);
+    
     console.log('✅ تم تحميل التطبيق بنجاح');
 };
 

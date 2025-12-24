@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>اونلاين | متجرك الإلكتروني الأول</title>
-    <meta name="description" content="اونلاين - أفضل متجر إلكتروني لإكسسوارات الجوالات والكمبيوتر - شواحن أصلية، كابلات قوية، سماعات عالية الجودة"
+    <title>اونلاينو | متجرك الإلكتروني المتكامل</title>
+    <meta name="description" content="اونلاينو - أفضل متجر لإكسسوارات الجوالات والكمبيوتر - منتجات أصلية بأسعار منافسة">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,23 +21,42 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+    <!-- ========== شاشة التحميل ========== -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-logo">
+                <div class="logo-icon loading-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+            </div>
+            <h1 class="loading-title">اونلاينو</h1>
+            <p class="loading-subtitle">متجرك الإلكتروني الأول</p>
+            <div class="loading-spinner">
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+            </div>
+            <p class="loading-text">جاري تحميل المنتجات...</p>
+        </div>
+    </div>
+    
     <!-- ========== المتجر العام ========== -->
     <div class="public-container" id="publicContainer">
         <header class="header" id="mainHeader">
             <div class="header-content">
                 <a href="#" class="logo" onclick="showStore(); return false;">
                     <div class="logo-icon">
-                        <i class="fas fa-shopping-bag"></i>
+                        <i class="fas fa-bolt"></i>
                     </div>
                     <div class="logo-text">
-                        <span class="logo-title">اونلاين</span>
-                        <span class="logo-subtitle">تسوق بذكاء • وفّر بسهولة</span>
+                        <span class="logo-title">اونلاينو</span>
+                        <span class="logo-subtitle">متجرك الإلكتروني الأول</span>
                     </div>
                 </a>
                 
                 <div class="header-actions">
                     <button class="cart-btn" onclick="openCartModal()" title="سلة التسوق">
-                        <i class="fas fa-shopping-cart"></i>
+                        <i class="fas fa-shopping-bag"></i>
                         <span class="cart-count" id="cartCount">0</span>
                     </button>
                     
@@ -52,12 +71,23 @@
         <main class="store-content">
             <section class="hero-section">
                 <div class="hero-bg"></div>
+                <div class="hero-particles">
+                    <div class="particle"></div>
+                    <div class="particle"></div>
+                    <div class="particle"></div>
+                    <div class="particle"></div>
+                    <div class="particle"></div>
+                </div>
                 <div class="hero-content">
+                    <div class="hero-badge">
+                        <i class="fas fa-star"></i>
+                        <span>الأفضل في مصر</span>
+                    </div>
                     <h1 class="hero-title">
-                        <span class="hero-emoji">🛍️</span>
-                        اونلاين - تسوق بذكاء من منزلك
+                        اكتشف عالم
+                        <span class="gradient-text">التكنولوجيا</span>
                     </h1>
-                    <p class="hero-subtitle">أفضل الأسعار • جودة مضمونة • توصيل سريع • تجربة تسوق ممتعة</p>
+                    <p class="hero-subtitle">منتجات أصلية • أسعار تنافسية • ضمان حقيقي • خدمة عملاء متميزة</p>
                     
                     <div class="hero-features">
                         <div class="feature">
@@ -65,7 +95,7 @@
                             <span>توصيل فوري</span>
                         </div>
                         <div class="feature">
-                            <div class="feature-icon"><i class="fas fa-certificate"></i></div>
+                            <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
                             <span>ضمان أصلي</span>
                         </div>
                         <div class="feature">
@@ -73,7 +103,7 @@
                             <span>دعم 24/7</span>
                         </div>
                         <div class="feature">
-                            <div class="feature-icon"><i class="fas fa-check-circle"></i></div>
+                            <div class="feature-icon"><i class="fas fa-certificate"></i></div>
                             <span>منتجات معتمدة</span>
                         </div>
                     </div>
@@ -83,7 +113,7 @@
             <section class="store-filters">
                 <div class="search-box">
                     <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="searchInput" placeholder="ابحث عن شاحن، كابل، سماعة...">
+                    <input type="text" id="searchInput" placeholder="ابحث عن شاحن، كابل، سماعة، جراب...">
                     <button class="search-btn" onclick="searchProducts()">
                         <span>بحث</span>
                         <i class="fas fa-arrow-left"></i>
@@ -93,11 +123,49 @@
                 <div class="category-filters" id="categoryFilters"></div>
             </section>
             
-            <div class="products-grid" id="productsContainer"></div>
+            <div class="products-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-fire"></i> أحدث المنتجات</h2>
+                    <p>اكتشف أفضل العروض والمنتجات المميزة</p>
+                </div>
+                <div class="products-grid" id="productsContainer"></div>
+            </div>
         </main>
         
         <footer class="footer">
-            <p>© 2024 اونلاين - متجرك الإلكتروني الأول | جميع الحقوق محفوظة</p>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <div class="logo-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div>
+                            <h3>اونلاينو</h3>
+                            <p>متجرك الإلكتروني الموثوق</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>روابط سريعة</h4>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-chevron-left"></i> المنتجات</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-left"></i> العروض</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-left"></i> من نحن</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>تواصل معنا</h4>
+                    <div class="social-links">
+                        <a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-btn"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#" class="social-btn"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2024 اونلاينو - جميع الحقوق محفوظة</p>
+            </div>
         </footer>
     </div>
     
@@ -107,7 +175,7 @@
             <div class="header-content">
                 <div class="logo">
                     <div class="logo-icon admin-icon">
-                        <i class="fas fa-shield-halved"></i>
+                        <i class="fas fa-gauge-high"></i>
                     </div>
                     <div class="logo-text">
                         <span class="logo-title">لوحة التحكم</span>
@@ -144,6 +212,10 @@
             <button class="nav-tab" onclick="showAdminPage('categories', this)">
                 <i class="fas fa-tags"></i>
                 <span>التصنيفات</span>
+            </button>
+            <button class="nav-tab" onclick="showAdminPage('reports', this)">
+                <i class="fas fa-chart-bar"></i>
+                <span>التقارير</span>
             </button>
             <button class="nav-tab" onclick="showAdminPage('settings', this)">
                 <i class="fas fa-cogs"></i>
@@ -354,6 +426,26 @@
                 </div>
             </div>
             
+            <!-- التقارير -->
+            <div class="admin-page" id="reportsPage">
+                <div class="content-card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-chart-bar"></i>
+                            التقارير والإحصائيات
+                        </h2>
+                        <button class="btn btn-primary" onclick="displayReports()">
+                            <i class="fas fa-sync-alt"></i>
+                            تحديث
+                        </button>
+                    </div>
+                    
+                    <div id="reportsContainer">
+                        <!-- سيتم ملؤها بواسطة JavaScript -->
+                    </div>
+                </div>
+            </div>
+            
             <!-- الإعدادات -->
             <div class="admin-page" id="settingsPage">
                 <div class="content-card">
@@ -448,7 +540,7 @@
     <div class="modal" id="cartModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3><i class="fas fa-shopping-cart"></i> سلة التسوق</h3>
+                <h3><i class="fas fa-shopping-bag"></i> سلة التسوق</h3>
                 <button class="modal-close" onclick="closeCartModal()">
                     <i class="fas fa-times"></i>
                 </button>
