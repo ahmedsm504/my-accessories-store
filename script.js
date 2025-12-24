@@ -237,6 +237,31 @@ function closeCartModal() { document.getElementById('cartModal').classList.remov
 function openOrderSuccessModal() { document.getElementById('orderSuccessModal').classList.add('active'); }
 function closeOrderSuccessModal() { document.getElementById('orderSuccessModal').classList.remove('active'); showStore(); }
 
+// ==================== عرض الصورة بحجم كامل ====================
+function openImageModal(imageSrc) {
+    const modal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    modalImage.src = imageSrc;
+    modal.classList.add('active');
+}
+
+function closeImageModal() {
+    const modal = document.getElementById('imageModal');
+    modal.classList.remove('active');
+}
+
+// إغلاق النافذة عند النقر خارج الصورة
+document.addEventListener('DOMContentLoaded', function() {
+    const imageModal = document.getElementById('imageModal');
+    if (imageModal) {
+        imageModal.addEventListener('click', function(e) {
+            if (e.target === imageModal) {
+                closeImageModal();
+            }
+        });
+    }
+});
+
 // ==================== إدارة السلة ====================
 function updateCartCount() {
     const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
@@ -393,8 +418,9 @@ function displayProducts() {
             imageHtml = `
                 <img src="${imageUrl}" 
                      alt="${product.name}" 
-                     style="width: 100%; height: 100%; object-fit: cover;"
+                     style="width: 100%; height: 100%; object-fit: cover; cursor: zoom-in;"
                      loading="lazy"
+                     onclick="openImageModal('${imageUrl}')"
                      onerror="console.error('❌ فشل تحميل الصورة:', '${imageUrl}'); this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;background:linear-gradient(135deg,#f0f0f0,#e0e0e0);display:flex;align-items:center;justify-content:center\\'><i class=\\'fas fa-image\\' style=\\'font-size:4em;color:#ccc\\'></i></div>';">
             `;
         } else {
@@ -716,8 +742,9 @@ function adminSearchProducts() {
             imageHtml = `
                 <img src="${imageUrl}" 
                      alt="${product.name}" 
-                     style="width: 100%; height: 100%; object-fit: cover;"
+                     style="width: 100%; height: 100%; object-fit: cover; cursor: zoom-in;"
                      loading="lazy"
+                     onclick="openImageModal('${imageUrl}')"
                      onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;background:linear-gradient(135deg,#f0f0f0,#e0e0e0);display:flex;align-items:center;justify-content:center\\'><i class=\\'fas fa-image\\' style=\\'font-size:4em;color:#ccc\\'></i></div>';">
             `;
         } else {
